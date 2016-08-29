@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Xml;
 import android.view.View;
+import android.widget.TextView;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -16,10 +17,14 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
+
+
 
 public class MainActivity extends AppCompatActivity {
 
+    private TextView ed_num;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,36 +92,66 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-  public void click3( View view)throws Exception
-  {
-
-      AssetManager assetManager =  getAssets();
+  public void click3( View view)throws Exception {
+      ArrayList<Sms> al = null;
+      Sms sms = null;
+      AssetManager assetManager = getAssets();
 
       InputStream fis = assetManager.open("info.xml");
-   //   XmlPullParser xpp = Xml.newPullParser();
+      XmlPullParser xpp = Xml.newPullParser();
 
-   //   xpp.setInput(fis,"utf-8");
+      xpp.setInput(fis, "utf-8");
 
-//      int eventType = xpp.next();
-//      while (eventType != XmlPullParser.END_DOCUMENT)
-//      {
-//          if(eventType == XmlPullParser.START_DOCUMENT) {
-//              System.out.println("Start document");
-//          } else if(eventType == XmlPullParser.START_TAG) {
-//              System.out.println("Start tag "+xpp.getName());
-//          } else if(eventType == XmlPullParser.END_TAG) {
-//              System.out.println("End tag "+xpp.getName());
-//          } else if(eventType == XmlPullParser.TEXT) {
-//              System.out.println("Text "+xpp.getText());
-//          }
-//      eventType = xpp.next();
-//     }
-   // System.out.println("End document");
+      int eventType = xpp.next();
+      while (eventType != XmlPullParser.END_DOCUMENT) {
+
+          if (eventType == XmlPullParser.START_TAG) {
+              String tagName = xpp.getName();
+              if ("smses".equals(tagName)) {
+                  al = new ArrayList<Sms>();
+              } else if ("sms".equals(tagName)) {
+                  sms = new Sms();
+              } else if ("address".equals(tagName)) {
+                  String name = xpp.nextText();
+                  System.out.println(name);
+                sms.setAddress(name);
+              } else if ("body".equals(tagName)) {
+                  String name = xpp.nextText();
+                  System.out.println(name);
+                 sms.setBody(name);
+              } else if ("time".equals(tagName)) {
+                  String name = xpp.nextText();
+                  System.out.println(name);
+                  sms.setTime(name);
+              }
+
+          } else if (eventType == XmlPullParser.END_TAG) {
+              String tagName = xpp.getName();
+              if("sms".equals(tagName) )
+                     al.add(sms);
+          }
+          eventType = xpp.next();
+      }
+   //   System.out.println("End document");
+
+      fis.close();
+      showSms(al);
+  }
+
+    private void showSms( ArrayList<Sms> smses)
+    {
+        StringBuilder sb = new StringBuilder();
+        for( Sms sms:smses)
+        {
+            sb.append( sms.toString()+"\n");
+        }
 
 
+        ed_num = (TextView) findViewById(R.id.tv_sms);
 
+        ed_num.setText(sb.toString());
 
+    }
 
-}
 
 }
